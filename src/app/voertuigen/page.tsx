@@ -115,7 +115,12 @@ export default function Page() {
 													<FormItem>
 														<FormLabel>Kenteken</FormLabel>
 														<FormControl>
-															<Input placeholder="3-TNS-91" type="text" {...field} />
+															<Input
+																placeholder="3-TNS-91"
+																type="text"
+																{...field}
+																value={field.value || ''}
+															/>
 														</FormControl>
 														<FormMessage />
 													</FormItem>
@@ -131,7 +136,12 @@ export default function Page() {
 													<FormItem>
 														<FormLabel>Naam</FormLabel>
 														<FormControl>
-															<Input placeholder="Mercedes C-klasse" type="text" {...field} />
+															<Input
+																placeholder="Mercedes C-klasse"
+																type="text"
+																{...field}
+																value={field.value || ''}
+															/>
 														</FormControl>
 														<FormMessage />
 													</FormItem>
@@ -234,6 +244,7 @@ export default function Page() {
 																onChange={(e) =>
 																	field.onChange(e.target.value ? Number(e.target.value) : undefined)
 																}
+																value={field.value || ''}
 															/>
 														</FormControl>
 														<FormMessage />
@@ -250,7 +261,12 @@ export default function Page() {
 											<FormItem>
 												<FormLabel>Afbeelding URL</FormLabel>
 												<FormControl>
-													<Input placeholder="/mercedes-c-klasse.png" type="text" {...field} />
+													<Input
+														placeholder="/mercedes-c-klasse.png"
+														type="text"
+														{...field}
+														value={field.value || ''}
+													/>
 												</FormControl>
 
 												<FormMessage />
