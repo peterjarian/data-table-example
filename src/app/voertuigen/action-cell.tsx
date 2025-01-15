@@ -1,49 +1,36 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Row } from '@tanstack/react-table';
 import { VoertuigContract } from './page';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-	Form,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormControl,
-	FormMessage,
-} from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
+import { captalize } from '@/lib/utils';
 
 export interface ActionCellProps {
 	data: Row<VoertuigContract>;
 }
 
 const formSchema = z.object({
-	naam: z.string(),
-	soort: z.string(),
-	zitplaatsen: z.number(),
-	prijs: z.number(),
-	jaar: z.number(),
-	afbeeldingUrl: z.string(),
+	naam: z.string().nonempty('Naam is verplicht.'),
+	soort: z.string({ required_error: 'Soort is verplicht.' }),
+	zitplaatsen: z
+		.number({ required_error: 'Zitplaatsen is verplicht.' })
+		.min(1, 'Er moet minimaal 1 zitplaats zijn')
+		.max(12, 'Er mogen maximaal 12 zitplaatsen zijn.'),
+	prijs: z.number({ required_error: 'Prijs is verplicht.' }).min(1, 'Prijs moet minimaal 1 euro zijn/'),
+	jaar: z
+		.number({ required_error: 'Jaar is verplicht.' })
+		.min(2000, 'Een voertuig moet uit het jaar 2000 of later komen.')
+		.max(new Date().getFullYear(), `Een voertuig moet uit het jaar ${new Date().getFullYear()} of eerder komen.`),
+	afbeeldingUrl: z.string().nonempty('Afbeelding URL is verplicht.'),
 });
 
 export default function ActionCell({ data }: ActionCellProps) {
@@ -66,7 +53,8 @@ export default function ActionCell({ data }: ActionCellProps) {
 	}
 
 	/**
-	 * Runs on submitting of the form
+	 * Runs on submitting of the form.
+	 * This should make a call to the backend to do something
 	 */
 	function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
@@ -81,20 +69,24 @@ export default function ActionCell({ data }: ActionCellProps) {
 	return (
 		<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 			<DialogTrigger asChild>
-				<Button onClick={() => setDialogOpen(true)}>Edit</Button>
+				<Button onClick={() => setDialogOpen(true)}>Aanpassen</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{data.original.naam}</DialogTitle>
 
 					<Form {...form}>
-						<form
-							onSubmit={form.handleSubmit(onSubmit)}
-							className="space-y-8 max-w-3xl mx-auto py-10"
-							id="verander-voertuig"
-						>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10" id="verander-voertuig">
 							<div className="grid grid-cols-12 gap-4">
-								<div className="col-span-4">
+								<div className="col-span-6">
+									<FormItem>
+										<FormLabel>Kenteken</FormLabel>
+										<Input placeholder={data.original.kenteken} type="text" disabled />
+										<FormMessage />
+									</FormItem>
+								</div>
+
+								<div className="col-span-6">
 									<FormField
 										control={form.control}
 										name="naam"
@@ -103,12 +95,8 @@ export default function ActionCell({ data }: ActionCellProps) {
 											<FormItem>
 												<FormLabel>Naam</FormLabel>
 												<FormControl>
-													<Input
-														type="text"
-														{...field}
-													/>
+													<Input type="text" {...field} />
 												</FormControl>
-
 												<FormMessage />
 											</FormItem>
 										)}
@@ -125,32 +113,16 @@ export default function ActionCell({ data }: ActionCellProps) {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Soort</FormLabel>
-												<Select
-													onValueChange={
-														field.onChange
-													}
-												>
+												<Select onValueChange={field.onChange}>
 													<FormControl>
 														<SelectTrigger>
-															<SelectValue
-																placeholder={
-																	data
-																		.original
-																		.soort
-																}
-															/>
+															<SelectValue placeholder={captalize(data.original.soort)} />
 														</SelectTrigger>
 													</FormControl>
 													<SelectContent>
-														<SelectItem value="AUTO">
-															Auto
-														</SelectItem>
-														<SelectItem value="CAMPER">
-															Caravan
-														</SelectItem>
-														<SelectItem value="CARAVAN">
-															Caravan
-														</SelectItem>
+														<SelectItem value="AUTO">Auto</SelectItem>
+														<SelectItem value="CAMPER">Caravan</SelectItem>
+														<SelectItem value="CARAVAN">Caravan</SelectItem>
 													</SelectContent>
 												</Select>
 
@@ -167,23 +139,13 @@ export default function ActionCell({ data }: ActionCellProps) {
 										defaultValue={data.original.zitplaatsen}
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>
-													Zitplaatsen
-												</FormLabel>
+												<FormLabel>Zitplaatsen</FormLabel>
 												<FormControl>
 													<Input
 														type="number"
 														{...field}
 														onChange={(e) =>
-															field.onChange(
-																e.target.value
-																	? Number(
-																			e
-																				.target
-																				.value
-																	  )
-																	: undefined
-															)
+															field.onChange(e.target.value ? Number(e.target.value) : undefined)
 														}
 													/>
 												</FormControl>
@@ -209,15 +171,7 @@ export default function ActionCell({ data }: ActionCellProps) {
 														type="number"
 														{...field}
 														onChange={(e) =>
-															field.onChange(
-																e.target.value
-																	? Number(
-																			e
-																				.target
-																				.value
-																	  )
-																	: undefined
-															)
+															field.onChange(e.target.value ? Number(e.target.value) : undefined)
 														}
 													/>
 												</FormControl>
@@ -241,15 +195,7 @@ export default function ActionCell({ data }: ActionCellProps) {
 														type="number"
 														{...field}
 														onChange={(e) =>
-															field.onChange(
-																e.target.value
-																	? Number(
-																			e
-																				.target
-																				.value
-																	  )
-																	: undefined
-															)
+															field.onChange(e.target.value ? Number(e.target.value) : undefined)
 														}
 													/>
 												</FormControl>
@@ -279,10 +225,7 @@ export default function ActionCell({ data }: ActionCellProps) {
 					</Form>
 				</DialogHeader>
 				<DialogFooter>
-					<Button
-						onClick={onDelete}
-						className="bg-red-600 hover:bg-red-700"
-					>
+					<Button onClick={onDelete} className="bg-red-600 hover:bg-red-700">
 						Verwijder
 					</Button>
 					<Button form="verander-voertuig" type="submit">

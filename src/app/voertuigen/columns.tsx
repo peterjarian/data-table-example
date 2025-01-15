@@ -3,12 +3,6 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { VoertuigContract } from './page';
 import { Dot } from 'lucide-react';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '@/components/ui/tooltip';
 import ActionCell from './action-cell';
 
 export const columns: ColumnDef<VoertuigContract>[] = [
@@ -59,26 +53,7 @@ export const columns: ColumnDef<VoertuigContract>[] = [
 					break;
 			}
 
-			return (
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger>
-							{' '}
-							<Dot
-								color={color}
-								size={48}
-								aria-label={color.toLowerCase()}
-							></Dot>
-						</TooltipTrigger>
-						<TooltipContent>
-							<p>
-								{row.original.status.charAt(0).toUpperCase() +
-									row.original.status.slice(1).toLowerCase()}
-							</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
-			);
+			return <Dot color={color} size={48} aria-label={color.toLowerCase()}></Dot>;
 		},
 	},
 	{
